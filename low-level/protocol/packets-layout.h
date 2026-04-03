@@ -1,4 +1,7 @@
 
+#ifndef HID_PROTOCOL_H
+#define HID_PROTOCOL_H
+
 #include <inttypes.h>
 
 /*
@@ -32,3 +35,5 @@ enum Axis {
     AXIS_X = 0,
     AXIS_Y = 1,
 };
+
+#endif

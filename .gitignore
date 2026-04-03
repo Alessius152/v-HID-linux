@@ -13,6 +13,8 @@ main
 
 /dev-ai
 
+/testing
+
 # Se non hanno estensione e vuoi ignorare tutti i file binari 
 # generati nella cartella corrente (Linux/macOS):
 # Nota: questo ignora tutto ciò che non ha estensione, 

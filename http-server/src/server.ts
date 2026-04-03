@@ -15,11 +15,13 @@ const io = new Server(httpServer, {
     }
 })
 
+app.use(express.static(path.resolve(__dirname, './static')))
+
 startupWebSocketListeners(io)
 
 app.get('/hid', (req, res)=>{
 
-    res.sendFile(path.resolve(__dirname, './static/index.html'))
+    res.sendFile(path.resolve(__dirname, './static/vhid.html'))
 
 })
 
