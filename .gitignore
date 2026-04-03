@@ -1,0 +1,23 @@
+# Ignora tutti i file oggetto (compilazione intermedia)
+*.o
+
+# Ignora i file di archivio/librerie statiche
+*.a
+*.so
+
+# Ignora l'eseguibile specifico (se ha un nome fisso)
+main
+
+/http-server/dist
+/http-server/node_modules
+
+/dev-ai
+
+# Se non hanno estensione e vuoi ignorare tutti i file binari 
+# generati nella cartella corrente (Linux/macOS):
+# Nota: questo ignora tutto ciò che non ha estensione, 
+# usalo con cautela se hai file di testo senza estensione.
+/[a-zA-Z0-9]*
+!/[a-zA-Z0-9]*.*
+!.gitignore
+!Makefile
