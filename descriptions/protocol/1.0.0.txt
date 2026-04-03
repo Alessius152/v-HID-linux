@@ -1,0 +1,26 @@
+Il protocollo applicativo è a lunghezza fissa di 8 byte e viene trasportato sulla LAN.
+
+Il layout del pacchetto è il seguente:
+    [HID]-[1 byte]: Indica quale dispositivo simulare.
+        0: pressione tasto della tastiera,
+        1: pressione bottone del mouse,
+        2: movimento del mouse
+    [CODE]-[2 bytes]: Indica il codice del tasto premuto.
+        >---Se HID è pari a 2, questo campo sarà ignorato, perché,
+        come da protocollo, sarà vuoto.---<
+    [ACTION]-[1 byte]: Indica l'azione che effettua il tasto.
+        0: premuto
+        1: rilasciato.
+        >---Se HID è pari a 2, questo campo sarà ignorato, perché,
+        come da protocollo, sarà vuoto.---<
+    [AXIS]-[1 byte]: Indica quale asse è cambiato.
+        >---Questo campo verrà preso in considerazione se, e solo se
+        HID corrisponde alla codifica del valore 2, e quindi 
+        esprimiamo di star muovendo il mouse.---<
+        0: coordinata x
+        1: coordinata y
+    [DELTA]-[1 byte]: Questo campo è legato da AXIS e serve a indicare 
+        di quanto è cambiata la coordinata espressa.
+    [PADDING]-[2 bytes]: Questo campo è utile al solo scopo di far
+        risultare il pacchetto allineato a una sequenza di 8 bytes.
+        Potrebbe risultare utile per implementazioni future.

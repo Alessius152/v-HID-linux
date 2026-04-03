@@ -1,0 +1,67 @@
+Voglio sviluppare un software che permetta di simulare la HID di dispositivi come tastiera e mouse.
+
+Principalmente per il raspberry pi 5 perché mi occupa due porte usb 3.0 per setup-are il tutto e la mia 
+idea principale era di evitare proprio questo.
+
+<struttura del software>
+    Il software sarà eseguito su un sistema linux, precisamente ubuntu, ma credo vada bene per le distribuzioni più famose.
+
+    Ho un server scritto in c che riceve pacchetti TCP che servono a comunicare al kernel come "muovere" la HID.
+
+    Il protocollo lo ideerò io perché bisogna definire un layout dei pacchetti nello stream TCP.
+
+    l'utente finale vuole interagire tramite webapp, quindi farò un server nodejs 
+    che utilizzerà express e una componente websocket, nello specifico la libreria socket.io.
+
+    Entrambi i server fanno parte del software finale, quindi si eseguiranno insieme (o meglio, prima il server scritto in c e 
+    poi quello scritto in nodejs).
+
+    Quindi il flusso è: L'utente si connette a x.x.x.x:7787/, inserisce mette in focus un contenitore html e inizia a interagire 
+    secondo mouse/trackpad e tastiera.
+
+    Il browser segnala queste interazioni tramite l'oggetto window, vengono inoltrate al server express tramite socket.io e
+    da lì vengono codificate e inviate al server tcp scritto in c.
+</struttura del software>
+
+<protocollo di comunicazione>
+    Il protocollo applicativo si compone di pochi byte ed è a lunghezza variabile.
+
+    <pacchetto di interazione HID Virtualizzata>
+        Questo pacchetto ha un header fisso e un payload, come dicevamo poco fa, variabile.
+        <header statico>
+            Abbiamo un campo hid_type che occupa un singolo byte.
+            Dopodiché troviamo il campo payload_size rappresentante la lunghezza in byte del payload
+            <descrizione del campo hid_type>
+                Questo campo occupa un solo byte, il ché basta e avanza, perché per questa versione del protocollo
+                dobbiamo codificare solo due valori
+                0 (in binario 00000000) significa che il pacchetto è relativo ad una interazione HID da una tastiera.
+                1 (in binario 00000001) invece è relativo ad un evento emesso dal mouse.
+            </descrizione del campo hid_type>
+        </header statico>
+        <payload variabile>
+            Il payload varia di contenuto, principalmente in base al primo campo dell'header, cioè lo hid_type.
+            Se lo hid_type è pari a 0, e quindi il pacchetto è intenzionato a emulare un'interazione da tastiera:
+                il payload è sempre fisso, perché a questo punto nel payload troveremo i seguenti campi:
+                    key_code di 2 byte
+                    action 1 byte che indica semplicemente l'azione che la tastiera emette, ad esempio, con 0 un press e con 1 un release.
+                    Quest'ultimo campo è utile ad esempio per simulare le combinazioni di tasti.
+            Altrimenti:
+                Se lo hid_type esprime un evento emesso da un mouse, il payload prende questa forma, a sua volta variabile a 
+                seconda di un altro campo:
+                    ev_type 1 byte: Siccome con il mouse possiamo effettuare due tipi di interazione, e cioè click dei tasti soprastanti e movimento,
+                        questo campo mappa tali eventi in base ai seguenti principi:
+                            se 0, è un evento che serve a indicare un evento sui bottoni del mouse (stessa meccanica della tastiera),
+                            se altrimenti è 1, questo evento corrisponde al movimento sul display del mouse.
+                    Dopodiché procede il payload, ed'essendo che il precedente campo fa sì che il resto del payload varia a seconda di esso, 
+                    vediamo i possibili layout:
+                    Se ev_type è 0:
+                        dopo leggo il key_code di 2 byte (che a differenza della tastiera codifica i bottoni del mouse),
+                        e leggo la action, cioè press o release (sempre 1 byte 0 o 1)
+                    altrimenti se è pari a 1, leggo questi due campi:
+                        coordinate di 1 byte:
+                            qui se abbiamo 0 significa che è cambiata la coordinata x, se invece abbiamo 1, la y.
+                        delta: di quanto è cambiata la coordinata, Perché su linux, il sistema che gestisce le interazioni HID, e cioè uinput
+                            modifica la posizione del cursore in maniera relativa.
+        </payload variabile>
+    </pacchetto di interazione HID Virtualizzata>
+</protocollo di comunicazione>
